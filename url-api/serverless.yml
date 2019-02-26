@@ -1,0 +1,38 @@
+service:
+  name: urlShrtnrApi
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-west-1'}
+  memorySize: 512
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:PutItem"
+      Resource: !GetAtt UrlsTable.Arn
+
+functions:
+  generateId:
+    handler: index.generateId
+    name: url-shrtnr-generateId-${self:provider.stage}
+  saveUrl:
+    handler: index.saveUrl
+    name: url-shrtnr-saveUrl-${self:provider.stage}
+    environment:
+      TABLE_NAME:
+        Ref: UrlsTable
+
+resources:
+  Resources:
+    UrlsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: shortId
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: shortId
+            KeyType: HASH

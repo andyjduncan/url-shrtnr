@@ -1,0 +1,18 @@
+{
+  "name": "url-api",
+  "version": "1.0.0",
+  "description": "URL Shrtnr management API",
+  "main": "index.js",
+  "author": "Andy Duncan <andy@adjectivecolournoun.com>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "aws-sdk-mock": "^4.3.0",
+    "jest": "^23.6.0",
+    "serverless": "^1.38.0"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.382.0",
+    "nanoid": "^2.0.0"
+  }
+}
