@@ -1,6 +1,10 @@
 service:
   name: urlShrtnrApi
 
+plugins:
+  - serverless-step-functions
+  - serverless-pseudo-parameters
+
 provider:
   name: aws
   runtime: nodejs8.10
@@ -14,15 +18,61 @@ provider:
       Resource: !GetAtt UrlsTable.Arn
 
 functions:
+  retryGuard:
+    handler: index.retryGuard
+    name: ${self:service}-retryGuard-${self:provider.stage}
   generateId:
     handler: index.generateId
-    name: url-shrtnr-generateId-${self:provider.stage}
+    name: ${self:service}-generateId-${self:provider.stage}
   saveUrl:
     handler: index.saveUrl
-    name: url-shrtnr-saveUrl-${self:provider.stage}
+    name: ${self:service}-saveUrl-${self:provider.stage}
     environment:
       TABLE_NAME:
         Ref: UrlsTable
+  restResponse:
+    handler: index.restResponse
+    name: ${self:service}-restResponse-${self:provider.stage}
+
+stepFunctions:
+  stateMachines:
+    saveUrl:
+      name: sync-saveUrl-${self:provider.stage}
+      definition:
+        Comment: Generate a short id for a URL and respond synchronously
+        StartAt: RetryGuard
+        States:
+          RetryGuard:
+            Type: Task
+            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-retryGuard-${opt:stage}
+            Next: RetryCheck
+          RetryCheck:
+            Type: Choice
+            Choices:
+              - Variable: $.retries
+                NumericGreaterThan: 3
+                Next: RetriesExceeded
+            Default: GenerateId
+          RetriesExceeded:
+            Type: Fail
+            Cause: Retries Exceeded
+          GenerateId:
+            Type: Task
+            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-generateId-${opt:stage}
+            Next: SaveUrl
+          SaveUrl:
+            Type: Task
+            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-saveUrl-${opt:stage}
+            Next: RestResponse
+            Catch:
+              - ErrorEquals:
+                  - ConditionalCheckFailedException
+                ResultPath: "$.error-info"
+                Next: RetryGuard
+          RestResponse:
+            Type: Task
+            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-restResponse-${opt:stage}
+            End: true
 
 resources:
   Resources:

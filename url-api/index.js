@@ -6,6 +6,12 @@ const nanoid = require('nanoid');
 
 const ID_LENGTH = 10;
 
+const retryGuard = async (input) => {
+    const retries = input.hasOwnProperty('retries') ? ++input.retries : 0;
+
+    return Object.assign({}, input, {retries});
+};
+
 const generateId = async (input) => {
     const shortId = nanoid(ID_LENGTH);
 
@@ -33,6 +39,12 @@ const saveUrl = async (input) => {
     };
 
     await dynamo.put(params).promise();
+
+    return input;
 };
 
-module.exports = {generateId, saveUrl};
+const restResponse = async (input) => {
+    return input;
+};
+
+module.exports = {retryGuard, generateId, saveUrl, restResponse};

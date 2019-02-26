@@ -31,6 +31,28 @@ describe('generating id', () => {
     });
 });
 
+describe('retry guard', () => {
+   it('initialises the retry guard', async () => {
+       const result = await index.retryGuard({});
+
+       expect(result.retries).toBe(0);
+   });
+
+   it('increments the retry guard', async () => {
+       const result = await index.retryGuard({retries: 0});
+
+       expect(result.retries).toBe(1);
+   });
+
+   it('passes through input properties', async () => {
+       const otherProp = randString();
+
+       const result = await index.retryGuard({otherProp});
+
+       expect(result.otherProp).toMatch(otherProp);
+   });
+});
+
 describe('storing urls', () => {
     it('saves the url', async () => {
         const url = randString();
@@ -68,5 +90,23 @@ describe('storing urls', () => {
         });
 
         expect(dynamoMock.stub.calledOnce).toBeTruthy();
+    });
+
+    it('returns the input', async () => {
+        const url = randString();
+        const shortId = randString();
+        const otherProp = randString();
+
+        AWS.mock('DynamoDB.DocumentClient', 'put');
+
+        const result = await index.saveUrl({
+            shortId,
+            url,
+            otherProp
+        });
+
+        expect(result.shortId).toMatch(shortId);
+        expect(result.url).toMatch(url);
+        expect(result.otherProp).toMatch(otherProp);
     })
 });
