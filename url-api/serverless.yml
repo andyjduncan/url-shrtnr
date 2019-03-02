@@ -14,6 +14,7 @@ provider:
   iamRoleStatements:
     - Effect: "Allow"
       Action:
+        - "dynamodb:GetItem"
         - "dynamodb:PutItem"
       Resource: !GetAtt UrlsTable.Arn
     - Effect: "Allow"
@@ -34,6 +35,13 @@ functions:
         Ref: SaveUrlStateMachine
     events:
       - http: POST shorten
+  serveUrl:
+    handler: serving-api.serveUrl
+    environment:
+      TABLE_NAME:
+        Ref: UrlsTable
+    events:
+      - http: GET {shortId}
   retryGuard:
     handler: save-urls.retryGuard
     name: ${self:service}-retryGuard-${self:provider.stage}
