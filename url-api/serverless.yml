@@ -16,28 +16,42 @@ provider:
       Action:
         - "dynamodb:PutItem"
       Resource: !GetAtt UrlsTable.Arn
+    - Effect: "Allow"
+      Action:
+        - "states:StartExecution"
+      Resource:
+        Ref: SaveUrlStateMachine
+    - Effect: "Allow"
+      Action:
+        - "states:DescribeExecution"
+      Resource: arn:aws:states:#{AWS::Region}:#{AWS::AccountId}:execution:saveUrl-${self:provider.stage}:*
 
 functions:
+  shortenUrl:
+    handler: management-api.shortenUrl
+    environment:
+      SAVE_URL:
+        Ref: SaveUrlStateMachine
+    events:
+      - http: POST shorten
   retryGuard:
-    handler: index.retryGuard
+    handler: save-urls.retryGuard
     name: ${self:service}-retryGuard-${self:provider.stage}
   generateId:
-    handler: index.generateId
+    handler: save-urls.generateId
     name: ${self:service}-generateId-${self:provider.stage}
   saveUrl:
-    handler: index.saveUrl
+    handler: save-urls.saveUrl
     name: ${self:service}-saveUrl-${self:provider.stage}
     environment:
       TABLE_NAME:
         Ref: UrlsTable
-  restResponse:
-    handler: index.restResponse
-    name: ${self:service}-restResponse-${self:provider.stage}
 
 stepFunctions:
   stateMachines:
     saveUrl:
-      name: sync-saveUrl-${self:provider.stage}
+      name: saveUrl-${self:provider.stage}
+      id: SaveUrlStateMachine
       definition:
         Comment: Generate a short id for a URL and respond synchronously
         StartAt: RetryGuard
@@ -63,16 +77,12 @@ stepFunctions:
           SaveUrl:
             Type: Task
             Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-saveUrl-${opt:stage}
-            Next: RestResponse
+            End: true
             Catch:
               - ErrorEquals:
                   - ConditionalCheckFailedException
                 ResultPath: "$.error-info"
                 Next: RetryGuard
-          RestResponse:
-            Type: Task
-            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-restResponse-${opt:stage}
-            End: true
 
 resources:
   Resources:

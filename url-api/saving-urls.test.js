@@ -2,13 +2,11 @@
 
 const AWS = require('aws-sdk-mock');
 
-const index = require('./index');
+const saveUrls = require('./save-urls');
 
 const randString = () => Math.random().toString(36).substr(2, 5);
 
 const tableName = randString();
-
-const url = randString();
 
 beforeEach(() => {
     process.env.TABLE_NAME = tableName;
@@ -17,7 +15,7 @@ beforeEach(() => {
 
 describe('generating id', () => {
     it('generates a new id', async () => {
-        const response = await index.generateId();
+        const response = await saveUrls.generateId();
 
         expect(response.shortId).toMatch(/[-A-Za-z0-9_]{10}/);
     });
@@ -25,7 +23,7 @@ describe('generating id', () => {
     it('passes through the input url', async () => {
         const url = randString();
 
-        const response = await index.generateId({url});
+        const response = await saveUrls.generateId({url});
 
         expect(response.url).toMatch(url);
     });
@@ -33,13 +31,13 @@ describe('generating id', () => {
 
 describe('retry guard', () => {
    it('initialises the retry guard', async () => {
-       const result = await index.retryGuard({});
+       const result = await saveUrls.retryGuard({});
 
        expect(result.retries).toBe(0);
    });
 
    it('increments the retry guard', async () => {
-       const result = await index.retryGuard({retries: 0});
+       const result = await saveUrls.retryGuard({retries: 0});
 
        expect(result.retries).toBe(1);
    });
@@ -47,7 +45,7 @@ describe('retry guard', () => {
    it('passes through input properties', async () => {
        const otherProp = randString();
 
-       const result = await index.retryGuard({otherProp});
+       const result = await saveUrls.retryGuard({otherProp});
 
        expect(result.otherProp).toMatch(otherProp);
    });
@@ -66,7 +64,7 @@ describe('storing urls', () => {
             callback();
         });
 
-        await index.saveUrl({
+        await saveUrls.saveUrl({
             shortId,
             url
         });
@@ -84,7 +82,7 @@ describe('storing urls', () => {
             callback();
         });
 
-        await index.saveUrl({
+        await saveUrls.saveUrl({
             shortId,
             url
         });
@@ -99,7 +97,7 @@ describe('storing urls', () => {
 
         AWS.mock('DynamoDB.DocumentClient', 'put');
 
-        const result = await index.saveUrl({
+        const result = await saveUrls.saveUrl({
             shortId,
             url,
             otherProp

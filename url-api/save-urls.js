@@ -44,7 +44,14 @@ const saveUrl = async (input) => {
 };
 
 const restResponse = async (input) => {
-    return input;
+    const {url, shortId} = input;
+    return {
+        statusCode: 200,
+        headers: {
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({url, shortId})
+    };
 };
 
 module.exports = {retryGuard, generateId, saveUrl, restResponse};
