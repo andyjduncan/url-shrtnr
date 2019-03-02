@@ -2,7 +2,7 @@
 
 const AWS = require('aws-sdk');
 
-const pWhilst = require('p-whilst');
+const waitFor = require('p-wait-for');
 
 const shortenUrl = async (httpInput) => {
     const stepFunctions = new AWS.StepFunctions();
@@ -23,13 +23,15 @@ const shortenUrl = async (httpInput) => {
 
     const execution = await stepFunctions.startExecution(params).promise();
 
-    let shortenResult = {status: 'RUNNING'};
+    let shortenResult = {};
 
-    await pWhilst(() => shortenResult.status === 'RUNNING',
-        async () => shortenResult = await stepFunctions.describeExecution({
+    await waitFor(async () => {
+        shortenResult = await stepFunctions.describeExecution({
             executionArn: execution.executionArn
-        }).promise()
-    );
+        }).promise();
+
+        return shortenResult.hasOwnProperty('output');
+    });
 
     const shortId = JSON.parse(shortenResult.output).shortId;
 

@@ -22,7 +22,7 @@ beforeEach(() => {
 describe('url saving', () => {
     it('triggers the save url step function with the posted url' , async () => {
         const now = new Date();
-        lolex.install({now});
+        const clock = lolex.install({now});
 
         const stepFunctions = AWS.mock('StepFunctions', 'startExecution', (params, callback) => {
             expect(params.stateMachineArn).toMatch(saveUrlArn);
@@ -39,6 +39,8 @@ describe('url saving', () => {
         });
 
         expect(stepFunctions.stub.calledOnce).toBeTruthy();
+
+        clock.uninstall();
     });
 
     it('returns the short id for the url', async () => {
@@ -72,6 +74,7 @@ describe('url saving', () => {
 
         const describeResults = [
             {status: 'RUNNING'},
+            {status: 'SUCCEEDED'},
             {
                 status: 'SUCCEEDED',
                 output: JSON.stringify({url, shortId})
