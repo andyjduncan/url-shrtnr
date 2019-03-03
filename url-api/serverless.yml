@@ -71,7 +71,7 @@ stepFunctions:
         States:
           RetryGuard:
             Type: Task
-            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-retryGuard-${opt:stage}
+            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-retryGuard-${self:provider.stage}
             Next: RetryCheck
           RetryCheck:
             Type: Choice
@@ -85,11 +85,11 @@ stepFunctions:
             Cause: Retries Exceeded
           GenerateId:
             Type: Task
-            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-generateId-${opt:stage}
+            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-generateId-${self:provider.stage}
             Next: SaveUrl
           SaveUrl:
             Type: Task
-            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-saveUrl-${opt:stage}
+            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-saveUrl-${self:provider.stage}
             End: true
             Catch:
               - ErrorEquals:
@@ -109,3 +109,54 @@ resources:
         KeySchema:
           - AttributeName: shortId
             KeyType: HASH
+    ShortenedDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Aliases:
+            - ${ssm:/url-shrtnr/short-domain}
+          DefaultCacheBehavior:
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            CachedMethods:
+              - HEAD
+              - GET
+            DefaultTTL: 30
+            ForwardedValues:
+              QueryString: false
+            TargetOriginId: api
+            ViewerProtocolPolicy: redirect-to-https
+          Enabled: false
+          HttpVersion: http2
+          Origins:
+            - Id: api
+              CustomOriginConfig:
+                OriginProtocolPolicy: https-only
+              DomainName:
+                !Join
+                - '.'
+                - - !Ref ApiGatewayRestApi
+                  - 'execute-api'
+                  - !Ref 'AWS::Region'
+                  - 'amazonaws'
+                  - 'com'
+              OriginPath: /${self:provider.stage}
+          PriceClass: PriceClass_100
+          ViewerCertificate:
+            AcmCertificateArn: ${ssm:/url-shrtnr/ssl-certificate}
+            SslSupportMethod: sni-only
+    ShortenedRecordSet:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        AliasTarget:
+          DNSName: !GetAtt ShortenedDistribution.DomainName
+          HostedZoneId: Z2FDTNDATAQYW2
+        HostedZoneName: ${ssm:/url-shrtnr/short-domain}.
+        Name: ${ssm:/url-shrtnr/short-domain}.
+        Type: A

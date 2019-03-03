@@ -10,7 +10,7 @@ const waitFor = require('p-wait-for');
 
 const linkingFormTemplate = `<html xmlns="http://www.w3.org/1999/html">
 <body>
-<form action="/dev/shorten" method="post" id="shortenForm">
+<form action="/shorten" method="post" id="shortenForm">
 <label for="url">Enter a URL to shorten</label>
 <input type="url" name="url" placeholder="http://www.example.com" pattern="https?://.+" required />
 <input type="submit">Shorten</input>
