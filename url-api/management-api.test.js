@@ -6,7 +6,19 @@ const lolex = require('lolex');
 
 const managementApi = require('./management-api');
 
+const handlebars = require('handlebars');
+
 const randString = () => Math.random().toString(36).substr(2, 5);
+
+jest.mock('handlebars');
+
+const renderedTemplate = randString();
+
+const template = jest.fn();
+
+template.mockReturnValue(renderedTemplate);
+
+handlebars.compile.mockReturnValue(template);
 
 const saveUrlArn = randString();
 
@@ -14,9 +26,28 @@ const url = randString();
 
 const shortId = randString();
 
+const shortenedRoot = randString();
+
 beforeEach(() => {
     AWS.restore();
     process.env.SAVE_URL = saveUrlArn;
+    process.env.SHORTENED_ROOT = shortenedRoot;
+});
+
+describe('linking form', () => {
+    it('returns the linking form as html', async () => {
+        const response = await managementApi.shorteningForm();
+
+        expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toMatch('text/html');
+    });
+
+    it('renders the form from a template', async () => {
+        const response = await managementApi.shorteningForm();
+
+        expect(template).toBeCalled();
+        expect(response.body).toMatch(renderedTemplate);
+    });
 });
 
 describe('url saving', () => {
@@ -27,7 +58,6 @@ describe('url saving', () => {
         const stepFunctions = AWS.mock('StepFunctions', 'startExecution', (params, callback) => {
             expect(params.stateMachineArn).toMatch(saveUrlArn);
             expect(params.input).toMatch(JSON.stringify({url: url}));
-            expect(params.name).toMatch(`${url}-${now.getTime()}`);
 
             callback(null, {executionArn: randString()});
         });
@@ -35,36 +65,12 @@ describe('url saving', () => {
         AWS.mock('StepFunctions', 'describeExecution', {output: '{}'});
 
         await managementApi.shortenUrl({
-            body: JSON.stringify({url: url})
+            body: `url=${url}`
         });
 
         expect(stepFunctions.stub.calledOnce).toBeTruthy();
 
         clock.uninstall();
-    });
-
-    it('returns the short id for the url', async () => {
-        const executionArn = randString();
-
-        AWS.mock('StepFunctions', 'startExecution', {executionArn});
-
-        AWS.mock('StepFunctions', 'describeExecution', (params, callback) => {
-            expect(params.executionArn).toMatch(executionArn);
-
-            callback(null, {
-                status: 'SUCCEEDED',
-                output: JSON.stringify({url, shortId})
-            });
-        });
-
-        const response = await managementApi.shortenUrl({
-            body: JSON.stringify({url})
-        });
-
-        const responseBody = JSON.parse(response.body);
-
-        expect(responseBody.url).toMatch(url);
-        expect(responseBody.shortId).toMatch(shortId);
     });
 
     it('polls for the execution result', async () => {
@@ -81,23 +87,20 @@ describe('url saving', () => {
             }
         ];
 
-        AWS.mock('StepFunctions', 'describeExecution', (params, callback) => {
+        const describeMock = AWS.mock('StepFunctions', 'describeExecution', (params, callback) => {
             expect(params.executionArn).toMatch(executionArn);
 
             callback(null, describeResults.shift());
         });
 
-        const response = await managementApi.shortenUrl({
-            body: JSON.stringify({url})
+        await managementApi.shortenUrl({
+            body: `url=${url}`
         });
 
-        const responseBody = JSON.parse(response.body);
-
-        expect(responseBody.url).toMatch(url);
-        expect(responseBody.shortId).toMatch(shortId);
+        expect(describeMock.stub.calledThrice).toBeTruthy();
     });
 
-    it('returns a successful http result', async () => {
+    it('returns the shortened url as html', async () => {
         const executionArn = randString();
 
         AWS.mock('StepFunctions', 'startExecution', {executionArn});
@@ -108,10 +111,30 @@ describe('url saving', () => {
         });
 
         const response = await managementApi.shortenUrl({
-            body: JSON.stringify({url})
+            body: `url=${url}`
         });
 
         expect(response.statusCode).toBe(200);
-        expect(response.headers['content-type']).toMatch('application/json');
+        expect(response.headers['content-type']).toMatch('text/html');
     });
+
+    it('renders the shortened url from a template', async () => {
+        const executionArn = randString();
+
+        AWS.mock('StepFunctions', 'startExecution', {executionArn});
+
+        AWS.mock('StepFunctions', 'describeExecution', {
+            status: 'SUCCEEDED',
+            output: JSON.stringify({url, shortId})
+        });
+
+        const response = await managementApi.shortenUrl({
+            body: `url=${url}`
+        });
+
+        const shortUrl = `${shortenedRoot}${shortId}`;
+
+        expect(template).toBeCalledWith({url, shortUrl});
+        expect(response.body).toMatch(renderedTemplate);
+    })
 });

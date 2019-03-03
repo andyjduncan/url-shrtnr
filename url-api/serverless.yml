@@ -28,11 +28,16 @@ provider:
       Resource: arn:aws:states:#{AWS::Region}:#{AWS::AccountId}:execution:saveUrl-${self:provider.stage}:*
 
 functions:
+  shortenForm:
+    handler: management-api.shorteningForm
+    events:
+      - http: GET /
   shortenUrl:
     handler: management-api.shortenUrl
     environment:
       SAVE_URL:
         Ref: SaveUrlStateMachine
+      SHORTENED_ROOT: https://${ssm:/url-shrtnr/short-domain}/
     events:
       - http: POST shorten
   serveUrl:
