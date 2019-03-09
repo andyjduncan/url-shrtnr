@@ -32,15 +32,7 @@ const shorteningForm = async () => {
     }
 };
 
-const shortenedUrlTemplate = `<html>
-Short URL for {{url}}
-<br />
-<a href="{{shortUrl}}">{{shortUrl}}</a>
-</html>`;
-
 const shortenUrl = async (httpInput) => {
-    console.log(JSON.stringify(httpInput));
-
     const stepFunctions = new AWS.StepFunctions();
 
     const stateMachineArn = process.env.SAVE_URL;
@@ -68,20 +60,11 @@ const shortenUrl = async (httpInput) => {
 
     const shortId = JSON.parse(shortenResult.output).shortId;
 
-    const shortenedRoot = process.env.SHORTENED_ROOT;
-
-    const shortUrl = `${shortenedRoot}${shortId}`;
-
-    const template = handlebars.compile(shortenedUrlTemplate);
-
-    const body = template({url, shortUrl});
-
     return {
-        statusCode: 200,
+        statusCode: 303,
         headers:{
-            'content-type': 'text/html'
-        },
-        body
+            location: `/${shortId}`
+        }
     };
 };
 

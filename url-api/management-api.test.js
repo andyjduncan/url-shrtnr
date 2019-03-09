@@ -100,7 +100,7 @@ describe('url saving', () => {
         expect(describeMock.stub.calledThrice).toBeTruthy();
     });
 
-    it('returns the shortened url as html', async () => {
+    it('returns a redirect to the shortened url', async () => {
         const executionArn = randString();
 
         AWS.mock('StepFunctions', 'startExecution', {executionArn});
@@ -114,27 +114,8 @@ describe('url saving', () => {
             body: `url=${url}`
         });
 
-        expect(response.statusCode).toBe(200);
-        expect(response.headers['content-type']).toMatch('text/html');
+        expect(response.statusCode).toBe(303);
+        expect(response.headers['location']).toMatch(`/${shortId}`);
     });
 
-    it('renders the shortened url from a template', async () => {
-        const executionArn = randString();
-
-        AWS.mock('StepFunctions', 'startExecution', {executionArn});
-
-        AWS.mock('StepFunctions', 'describeExecution', {
-            status: 'SUCCEEDED',
-            output: JSON.stringify({url, shortId})
-        });
-
-        const response = await managementApi.shortenUrl({
-            body: `url=${url}`
-        });
-
-        const shortUrl = `${shortenedRoot}${shortId}`;
-
-        expect(template).toBeCalledWith({url, shortUrl});
-        expect(response.body).toMatch(renderedTemplate);
-    })
 });

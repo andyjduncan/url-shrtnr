@@ -37,7 +37,6 @@ functions:
     environment:
       SAVE_URL:
         Ref: SaveUrlStateMachine
-      SHORTENED_ROOT: https://${ssm:/url-shrtnr/short-domain}/
     events:
       - http: POST shorten
   serveUrl:
