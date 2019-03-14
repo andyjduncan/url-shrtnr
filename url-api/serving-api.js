@@ -6,7 +6,12 @@ const handlebars = require('handlebars');
 
 const urlTemplate = `<html>
 <body>
-<a href="{{url}}">{{url}}</a>
+<div>
+Shortened Link <a href="{{shortenedRoot}}{{shortId}}">{{shortenedRoot}}{{shortId}}</a>
+</div>
+<div>
+Links to <a href="{{url}}">{{url}}</a>
+</div>
 </body>`;
 
 const serveUrl = async (httpInput) => {
@@ -24,7 +29,11 @@ const serveUrl = async (httpInput) => {
 
     const template = handlebars.compile(urlTemplate);
 
+    const shortenedRoot = process.env.SHORTENED_ROOT;
+
     const body = template({
+        shortId,
+        shortenedRoot,
         url: shortenedUrl.Item.url
     });
 

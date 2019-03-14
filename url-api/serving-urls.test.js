@@ -26,10 +26,13 @@ const input = {
     pathParameters: {shortId}
 };
 
+const shortenedRoot = randString();
+
 const url = randString();
 
 beforeEach(() => {
     process.env.TABLE_NAME = tableName;
+    process.env.SHORTENED_ROOT = shortenedRoot;
     AWS.restore();
 });
 
@@ -53,7 +56,7 @@ describe('serving shortened urls', () => {
         await servingApi.serveUrl(input);
 
         expect(handlebars.compile).toBeCalled();
-        expect(template).toBeCalledWith({url});
+        expect(template).toBeCalledWith({shortId, shortenedRoot, url});
     });
 
     it('returns the rendered template as html', async () => {
