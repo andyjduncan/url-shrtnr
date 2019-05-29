@@ -52,6 +52,5 @@ jobs:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
 
-
       - deploy:
-          npx serverless deploy
+          command: npx serverless deploy
