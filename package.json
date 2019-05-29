@@ -9,6 +9,7 @@
   "devDependencies": {
     "aws-sdk-mock": "^4.3.0",
     "jest": "^23.6.0",
+    "jest-junit": "^6.4.0",
     "lolex": "^3.1.0",
     "serverless": "^1.44.1",
     "serverless-pseudo-parameters": "^2.4.0",
@@ -21,6 +22,13 @@
     "p-wait-for": "^2.0.1"
   },
   "scripts": {
-    "test": "node_modules/.bin/jest"
+    "test": "jest --ci"
+  },
+  "jest": {
+    "reporters": ["default", "jest-junit"]
+  },
+  "jest-junit": {
+    "outputDirectory": "test-results/jest",
+    "outputName": "results.xml"
   }
 }

@@ -36,6 +36,9 @@ jobs:
       # run tests!
       - run: npm test
 
+      - store_test_results:
+          path: test-results
+
   deploy:
     docker:
       - image: circleci/node:10.15
@@ -50,5 +53,5 @@ jobs:
             - v1-dependencies-{{ checksum "package.json" }}
 
 
-      - run:
+      - deploy:
           npx serverless deploy
