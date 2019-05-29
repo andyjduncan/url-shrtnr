@@ -48,6 +48,8 @@ jobs:
     steps:
       - checkout
 
+      - aws-cli/install
+
       - aws-cli/configure
 
       - run:
