@@ -1,17 +1,12 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
 version: 2.1
-orbs:
-  aws-cli: circleci/aws-cli@0.1.13
 
 workflows:
   version: 2
   "Build and deploy":
     jobs:
       - build
-      - deploy
+      - deploy:
+          context: AWS
 jobs:
   build:
     docker:
@@ -48,9 +43,10 @@ jobs:
     steps:
       - checkout
 
-      - aws-cli/install
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
 
-      - aws-cli/configure
 
       - run:
           npx serverless deploy
