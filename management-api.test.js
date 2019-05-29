@@ -6,7 +6,7 @@ const lolex = require('lolex');
 
 const managementApi = require('./management-api');
 
-const handlebars = require('handlebars/lib/handlebars');
+const handlebars = require('handlebars');
 
 const randString = () => Math.random().toString(36).substr(2, 5);
 

@@ -2,7 +2,7 @@
 
 const AWS = require('aws-sdk/index');
 
-const handlebars = require('handlebars/lib/handlebars');
+const handlebars = require('handlebars');
 
 const urlTemplate = `<!doctype html>
 <html lang="en">

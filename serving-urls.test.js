@@ -2,7 +2,7 @@
 
 const AWS = require('aws-sdk-mock/index');
 
-const handlebars = require('handlebars/lib/handlebars');
+const handlebars = require('handlebars');
 
 const servingApi = require('./serving-api');
 

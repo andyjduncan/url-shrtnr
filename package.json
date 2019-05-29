@@ -21,6 +21,6 @@
     "p-wait-for": "^2.0.1"
   },
   "scripts": {
-    "test": "url-api/node_modules/.bin/jest"
+    "test": "node_modules/.bin/jest"
   }
 }
