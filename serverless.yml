@@ -7,7 +7,7 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs10.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-west-1'}
   shortDomain: ${ssm:/url-shrtnr/short-domain}
@@ -134,7 +134,7 @@ resources:
               QueryString: false
             TargetOriginId: api
             ViewerProtocolPolicy: redirect-to-https
-          Enabled: false
+          Enabled: true
           HttpVersion: http2
           Origins:
             - Id: api

@@ -1,10 +1,10 @@
 'use strict';
 
-const AWS = require('aws-sdk');
+const AWS = require('aws-sdk/index');
 
 const querystring = require('querystring');
 
-const handlebars = require('handlebars');
+const handlebars = require('handlebars/lib/handlebars');
 
 const waitFor = require('p-wait-for');
 

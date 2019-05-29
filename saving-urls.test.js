@@ -1,6 +1,6 @@
 'use strict';
 
-const AWS = require('aws-sdk-mock');
+const AWS = require('aws-sdk-mock/index');
 
 const saveUrls = require('./save-urls');
 

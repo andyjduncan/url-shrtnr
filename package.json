@@ -10,17 +10,17 @@
     "aws-sdk-mock": "^4.3.0",
     "jest": "^23.6.0",
     "lolex": "^3.1.0",
-    "serverless": "^1.38.0",
+    "serverless": "^1.44.1",
     "serverless-pseudo-parameters": "^2.4.0",
     "serverless-step-functions": "^1.13.0"
   },
   "dependencies": {
     "aws-sdk": "^2.382.0",
-    "handlebars": "^4.1.0",
+    "handlebars": "^4.1.2",
     "nanoid": "^2.0.0",
     "p-wait-for": "^2.0.1"
   },
   "scripts": {
-    "test": "jest"
+    "test": "url-api/node_modules/.bin/jest"
   }
 }

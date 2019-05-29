@@ -1,8 +1,8 @@
 'use strict';
 
-const AWS = require('aws-sdk-mock');
+const AWS = require('aws-sdk-mock/index');
 
-const handlebars = require('handlebars');
+const handlebars = require('handlebars/lib/handlebars');
 
 const servingApi = require('./serving-api');
 

@@ -1,8 +1,8 @@
 'use strict';
 
-const AWS = require('aws-sdk');
+const AWS = require('aws-sdk/index');
 
-const handlebars = require('handlebars');
+const handlebars = require('handlebars/lib/handlebars');
 
 const urlTemplate = `<!doctype html>
 <html lang="en">
