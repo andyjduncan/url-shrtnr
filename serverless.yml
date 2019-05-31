@@ -113,6 +113,20 @@ resources:
         KeySchema:
           - AttributeName: shortId
             KeyType: HASH
+    ShortenedLogsBucket:
+      Type: AWS::S3::Bucket
+    ShortenedLogsPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref ShortenedLogsBucket
+        PolicyDocument:
+          Statement:
+            - Action:
+                - "s3:PutObject"
+              Effect: Allow
+              Resource:
+                "arn:aws:s3:::#{ShortenedLogsBucket}/*"
+              Principal: c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0
     ShortenedDistribution:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -138,6 +152,9 @@ resources:
             ViewerProtocolPolicy: redirect-to-https
           Enabled: true
           HttpVersion: http2
+          Logging:
+            Bucket: !Ref ShortenedLogsBucket
+            Prefix: accesslogs/
           Origins:
             - Id: api
               CustomOriginConfig:
