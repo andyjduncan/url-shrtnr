@@ -53,4 +53,4 @@ jobs:
             - v1-dependencies-{{ checksum "package-lock.json" }}
 
       - deploy:
-          command: npx serverless deploy
+          command: npx serverless deploy --accountId ${AWS_ACCOUNT_ID}

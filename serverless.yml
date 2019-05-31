@@ -10,7 +10,8 @@ provider:
   runtime: nodejs10.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-west-1'}
-  cfnRole: arn:aws:iam::#{AWS::AccountId}:role/ServerlessCloudformation
+  account: ${opt:accountId}
+  cfnRole: arn:aws:iam::${self:provider.account}:role/ServerlessCloudformation
   shortDomain: ${ssm:/url-shrtnr/short-domain}
   sslCertificate: ${ssm:/url-shrtnr/ssl-certificate}
   memorySize: 512
