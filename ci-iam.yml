@@ -1,0 +1,119 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description:
+  IAM permissions for deploying the URL Shortener
+
+Parameters:
+  ServerlessServiceName:
+    Type: String
+    Default: urlShrtnr
+    Description: Enter the service name from serverless.yml
+
+Resources:
+  ServerlessCloudformationPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Policy for Cloudformation Serverless deployments
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:CreateRole
+              - iam:GetRole
+              - iam:GetRolePolicy
+              - iam:PutRolePolicy
+              - iam:PassRole
+            Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/${ServerlessServiceName}*"
+          - Effect: Allow
+            Action:
+              - apigateway:DELETE
+              - apigateway:GET
+              - apigateway:PATCH
+              - apigateway:POST
+              - apigateway:PUT
+            Resource: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/*"
+          - Effect: Allow
+            Action:
+              - dynamodb:CreateTable
+              - dynamodb:DescribeTable
+              - dynamodb:ListTagsOfResource
+              - dynamodb:TagResource
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${ServerlessServiceName}*"
+          - Effect: Allow
+            Action:
+              - lambda:*
+            Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ServerlessServiceName}*"
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:DescribeLogGroups
+            Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ServerlessServiceName}*"
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource:
+              - !Sub "arn:aws:s3:::${ServerlessServiceName}"
+              - !Sub "arn:aws:s3:::${ServerlessServiceName}/*"
+          - Effect: Allow
+            Action:
+              - states:*
+            Resource: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${ServerlessServiceName}*"
+  ServerlessCloudformationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref ServerlessCloudformationPolicy
+  ServerlessDeploymentPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Policy to start Serverless deployments
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:PassRole
+            Resource: !GetAtt ServerlessCloudformationRole.Arn
+          - Effect: Allow
+            Action:
+              - cloudformation:DescribeStacks
+              - cloudformation:ValidateTemplate
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - cloudformation:CreateStack
+              - cloudformation:UpdateStack
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DescribeStackResource
+              - cloudformation:ListStackResources
+            Resource: !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ServerlessServiceName}"
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ServerlessServiceName}/*"
+          - Effect: Allow
+            Action:
+              - apigateway:GET
+            Resource:
+              - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis"
+              - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/*"
+          - Effect: Allow
+            Action:
+              - apigateway:PATCH
+            Resource: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/*/stages/*"
+Outputs:
+  CloudformationDeploymentRoleOutput:
+    Value: !GetAtt ServerlessCloudformationRole.Arn
+    Export:
+      Name: !Sub "${ServerlessServiceName}CloudformationRole"
