@@ -50,7 +50,7 @@ functions:
     environment:
       TABLE_NAME:
         Ref: UrlsTable
-      SHORTENED_ROOT: https://${self:provider.domain.${self.provider.stage}}/
+      SHORTENED_ROOT: https://${self:provider.domain.${self:provider.stage}}/
     events:
       - http: GET {shortId}
   retryGuard:
@@ -137,7 +137,7 @@ resources:
       Properties:
         DistributionConfig:
           Aliases:
-            - ${self:provider.domain.${self.provider.stage}}
+            - ${self:provider.domain.${self:provider.stage}}
           DefaultCacheBehavior:
             AllowedMethods:
               - DELETE
@@ -184,5 +184,5 @@ resources:
           DNSName: !GetAtt ShortenedDistribution.DomainName
           HostedZoneId: Z2FDTNDATAQYW2
         HostedZoneName: ${self:provider.shortDomain}.
-        Name: ${self:provider.domain.${self.provider.stage}}.
+        Name: ${self:provider.domain.${self:provider.stage}}.
         Type: A
