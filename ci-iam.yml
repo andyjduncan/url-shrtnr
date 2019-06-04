@@ -7,8 +7,12 @@ Description:
 Parameters:
   ServerlessServiceName:
     Type: String
-    Default: urlShrtnr
-    Description: Enter the service name from serverless.yml
+    Default: urlshrtnr
+    Description: Enter the service name from serverless.yml.  Must be lowercase.
+    AllowedPattern: "^[a-z]+$"
+  HostedZoneId:
+    Type: AWS::Route53::HostedZone::Id
+    Description: Target Route53 zone id.
 
 Resources:
   ServerlessCloudformationPolicy:
@@ -21,11 +25,17 @@ Resources:
           - Effect: Allow
             Action:
               - iam:CreateRole
+              - iam:DeleteRole
               - iam:GetRole
               - iam:GetRolePolicy
               - iam:PutRolePolicy
+              - iam:DeleteRolePolicy
               - iam:PassRole
             Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/${ServerlessServiceName}*"
+          - Effect: Allow
+            Action:
+              - apigateway:POST
+            Resource: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis"
           - Effect: Allow
             Action:
               - apigateway:DELETE
@@ -37,6 +47,7 @@ Resources:
           - Effect: Allow
             Action:
               - dynamodb:CreateTable
+              - dynamodb:DeleteTable
               - dynamodb:DescribeTable
               - dynamodb:ListTagsOfResource
               - dynamodb:TagResource
@@ -47,19 +58,52 @@ Resources:
             Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ServerlessServiceName}*"
           - Effect: Allow
             Action:
+              - logs:DescribeLogGroups
+            Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group::log-stream:"
+          - Effect: Allow
+            Action:
               - logs:CreateLogGroup
+              - logs:DeleteLogGroup
               - logs:DescribeLogGroups
             Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ServerlessServiceName}*"
           - Effect: Allow
             Action:
               - s3:*
             Resource:
-              - !Sub "arn:aws:s3:::${ServerlessServiceName}"
-              - !Sub "arn:aws:s3:::${ServerlessServiceName}/*"
+              - !Sub "arn:aws:s3:::${ServerlessServiceName}*"
+              - !Sub "arn:aws:s3:::${ServerlessServiceName}*/*"
+          - Effect: Allow
+            Action:
+              - states:CreateStateMachine
+              - states:TagResource
+            Resource: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:*"
           - Effect: Allow
             Action:
               - states:*
-            Resource: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${ServerlessServiceName}*"
+            Resource:
+             - !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${ServerlessServiceName}*"
+          - Effect: Allow
+            Action:
+              - cloudfront:CreateDistribution
+              - cloudfront:CreateDistributionWithTags
+              - cloudfront:GetDistribution
+              - cloudfront:UpdateDistribution
+              - cloudfront:DeleteDistribution
+              - cloudfront:TagResource
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - route53:ListHostedZones
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - route53:ChangeResourceRecordSets
+              - route53:ListResourceRecordSets
+            Resource: !Sub "arn:aws:route53:::hostedzone/${HostedZoneId}"
+          - Effect: Allow
+            Action:
+              - route53:GetChange
+            Resource: !Sub "arn:aws:route53:::change/*"
   ServerlessCloudformationRole:
     Type: AWS::IAM::Role
     Properties:
@@ -94,10 +138,11 @@ Resources:
             Action:
               - cloudformation:CreateStack
               - cloudformation:UpdateStack
+              - cloudformation:DeleteStack
               - cloudformation:DescribeStackEvents
               - cloudformation:DescribeStackResource
               - cloudformation:ListStackResources
-            Resource: !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ServerlessServiceName}"
+            Resource: !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ServerlessServiceName}*"
           - Effect: Allow
             Action:
               - ssm:GetParameter
@@ -112,6 +157,15 @@ Resources:
             Action:
               - apigateway:PATCH
             Resource: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/*/stages/*"
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+            Resource:
+              - !Sub "arn:aws:s3:::${ServerlessServiceName}*"
+              - !Sub "arn:aws:s3:::${ServerlessServiceName}*/*"
 Outputs:
   CloudformationDeploymentRoleOutput:
     Value: !GetAtt ServerlessCloudformationRole.Arn

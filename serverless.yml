@@ -1,5 +1,5 @@
 service:
-  name: urlShrtnr
+  name: urlshrtnr
 
 plugins:
   - serverless-step-functions
@@ -10,10 +10,9 @@ provider:
   runtime: nodejs10.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-west-1'}
-  account: ${opt:accountId}
-  cfnRole: arn:aws:iam::${self:provider.account}:role/ServerlessCloudformation
-  shortDomain: ${ssm:/url-shrtnr/short-domain}
-  sslCertificate: ${ssm:/url-shrtnr/ssl-certificate}
+  cfnRole: ${cf:UrlShortnerCiIam.CloudformationDeploymentRoleOutput}
+  shortDomain: ${ssm:/${self:service}/short-domain}
+  sslCertificate: ${ssm:/${self:service}/ssl-certificate}
   memorySize: 512
   iamRoleStatements:
     - Effect: "Allow"
@@ -29,7 +28,7 @@ provider:
     - Effect: "Allow"
       Action:
         - "states:DescribeExecution"
-      Resource: arn:aws:states:#{AWS::Region}:#{AWS::AccountId}:execution:saveUrl-${self:provider.stage}:*
+      Resource: arn:aws:states:#{AWS::Region}:#{AWS::AccountId}:execution:${self:service}-saveUrl-${self:provider.stage}:*
 
 functions:
   shortenForm:
@@ -67,7 +66,7 @@ functions:
 stepFunctions:
   stateMachines:
     saveUrl:
-      name: saveUrl-${self:provider.stage}
+      name: ${self:service}-saveUrl-${self:provider.stage}
       id: SaveUrlStateMachine
       definition:
         Comment: Generate a short id for a URL and respond synchronously
@@ -128,59 +127,59 @@ resources:
                 - "arn:aws:s3:::#{ShortenedLogsBucket}/*"
               Principal:
                 CanonicalUser: c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0
-#    ShortenedDistribution:
-#      Type: AWS::CloudFront::Distribution
-#      DependsOn:
-#        - ShortenedLogsBucket
-#      Properties:
-#        DistributionConfig:
-#        Aliases:
-#            - ${self:provider.shortDomain}
-#          DefaultCacheBehavior:
-#            AllowedMethods:
-#              - DELETE
-#              - GET
-#              - HEAD
-#              - OPTIONS
-#              - PATCH
-#              - POST
-#              - PUT
-#            CachedMethods:
-#              - HEAD
-#              - GET
-#            DefaultTTL: 30
-#            ForwardedValues:
-#              QueryString: false
-#            TargetOriginId: api
-#            ViewerProtocolPolicy: redirect-to-https
-#          Enabled: true
-#          HttpVersion: http2
-#          Logging:
-#            Bucket: !GetAtt ShortenedLogsBucket.DomainName
-#            Prefix: accesslogs/
-#          Origins:
-#            - Id: api
-#              CustomOriginConfig:
-#                OriginProtocolPolicy: https-only
-#              DomainName:
-#                !Join
-#                - '.'
-#                - - !Ref ApiGatewayRestApi
-#                  - 'execute-api'
-#                  - !Ref 'AWS::Region'
-#                  - 'amazonaws'
-#                  - 'com'
-#              OriginPath: /${self:provider.stage}
-#          PriceClass: PriceClass_100
-#          ViewerCertificate:
-#            AcmCertificateArn: ${self:provider.sslCertificate}
-#            SslSupportMethod: sni-only
-#    ShortenedRecordSet:
-#      Type: AWS::Route53::RecordSet
-#      Properties:
-#        AliasTarget:
-#          DNSName: !GetAtt ShortenedDistribution.DomainName
-#          HostedZoneId: Z2FDTNDATAQYW2
-#        HostedZoneName: ${self:provider.shortDomain}.
-#        Name: ${self:provider.shortDomain}.
-#        Type: A
+    ShortenedDistribution:
+      Type: AWS::CloudFront::Distribution
+      DependsOn:
+        - ShortenedLogsBucket
+      Properties:
+        DistributionConfig:
+          Aliases:
+            - ${self:provider.shortDomain}
+          DefaultCacheBehavior:
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            CachedMethods:
+              - HEAD
+              - GET
+            DefaultTTL: 30
+            ForwardedValues:
+              QueryString: false
+            TargetOriginId: api
+            ViewerProtocolPolicy: redirect-to-https
+          Enabled: true
+          HttpVersion: http2
+          Logging:
+            Bucket: !GetAtt ShortenedLogsBucket.DomainName
+            Prefix: accesslogs/
+          Origins:
+            - Id: api
+              CustomOriginConfig:
+                OriginProtocolPolicy: https-only
+              DomainName:
+                !Join
+                - '.'
+                - - !Ref ApiGatewayRestApi
+                  - 'execute-api'
+                  - !Ref 'AWS::Region'
+                  - 'amazonaws'
+                  - 'com'
+              OriginPath: /${self:provider.stage}
+          PriceClass: PriceClass_100
+          ViewerCertificate:
+            AcmCertificateArn: ${self:provider.sslCertificate}
+            SslSupportMethod: sni-only
+    ShortenedRecordSet:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        AliasTarget:
+          DNSName: !GetAtt ShortenedDistribution.DomainName
+          HostedZoneId: Z2FDTNDATAQYW2
+        HostedZoneName: ${self:provider.shortDomain}.
+        Name: ${self:provider.shortDomain}.
+        Type: A
