@@ -12,6 +12,9 @@ provider:
   region: ${opt:region, 'eu-west-1'}
   cfnRole: ${cf:UrlShortnerCiIam.CloudformationDeploymentRoleOutput}
   shortDomain: ${ssm:/${self:service}/short-domain}
+  domain:
+    dev: dev.${self:provider.shortDomain}
+    prod: ${self:provider.shortDomain}
   sslCertificate: ${ssm:/${self:service}/ssl-certificate}
   memorySize: 512
   iamRoleStatements:
@@ -47,7 +50,7 @@ functions:
     environment:
       TABLE_NAME:
         Ref: UrlsTable
-      SHORTENED_ROOT: https://${self:provider.shortDomain}/
+      SHORTENED_ROOT: https://${self:provider.domain.${self.provider.stage}}/
     events:
       - http: GET {shortId}
   retryGuard:
@@ -134,7 +137,7 @@ resources:
       Properties:
         DistributionConfig:
           Aliases:
-            - ${self:provider.shortDomain}
+            - ${self:provider.domain.${self.provider.stage}}
           DefaultCacheBehavior:
             AllowedMethods:
               - DELETE
@@ -181,5 +184,5 @@ resources:
           DNSName: !GetAtt ShortenedDistribution.DomainName
           HostedZoneId: Z2FDTNDATAQYW2
         HostedZoneName: ${self:provider.shortDomain}.
-        Name: ${self:provider.shortDomain}.
+        Name: ${self:provider.domain.${self.provider.stage}}.
         Type: A

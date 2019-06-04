@@ -17,7 +17,7 @@ describe('generating id', () => {
     it('generates a new id', async () => {
         const response = await saveUrls.generateId();
 
-        expect(response.shortId).toMatch(/[-A-Za-z0-9_]{10}/);
+        expect(response.shortId).toMatch(/^[-A-Za-z0-9_]{10}$/);
     });
 
     it('passes through the input url', async () => {
