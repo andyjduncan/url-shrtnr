@@ -18,7 +18,7 @@
   "dependencies": {
     "aws-sdk": "^2.382.0",
     "handlebars": "^4.1.2",
-    "nanoid": "^2.0.0",
+    "nanoid": "^2.0.3",
     "p-wait-for": "^2.0.1"
   },
   "scripts": {
