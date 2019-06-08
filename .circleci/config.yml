@@ -60,7 +60,12 @@ jobs:
             - v1-dependencies-{{ checksum "package-lock.json" }}
 
       - run:
-          command: npx cucumber-js --world-parameters '{"baseUrl":"https://example.com", "shortenerUrl":"'${DEV_SHORTENER_URL}'"}' --format json
+          command: |
+            mkdir -p test-results
+            npx cucumber-js --world-parameters '{"baseUrl":"https://example.com", "shortenerUrl":"'${DEV_SHORTENER_URL}'"}' --format json:test-results/tests.cucumber
+
+      - store_test_results:
+          path: test-results
 
   deploy_dev:
     docker:
