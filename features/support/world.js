@@ -1,6 +1,6 @@
 'use strict';
 
-const { setWorldConstructor } = require("cucumber");
+const { setDefaultTimeout, setWorldConstructor } = require("cucumber");
 
 const webdriver = require('selenium-webdriver');
 
@@ -20,3 +20,5 @@ class CustomWorld {
 }
 
 setWorldConstructor(CustomWorld);
+
+setDefaultTimeout(10 * 1000);
