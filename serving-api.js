@@ -23,10 +23,10 @@ const urlTemplate = `<!doctype html>
         <h1 class="site-title">to-link</h1>
     </div>
         <div class="row">
-            to link <a href="{{url}}">{{url}}</a>
+            to link <a id="original" href="{{url}}">{{url}}</a>
         </div>
         <div class="row">
-            use <a href="{{shortenedRoot}}{{shortId}}">{{shortenedRoot}}{{shortId}}</a>
+            use <a id="short" href="{{shortenedRoot}}{{shortId}}">{{shortenedRoot}}{{shortId}}</a>
         </div>
     </div>
 </div>
