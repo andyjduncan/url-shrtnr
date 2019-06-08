@@ -14,7 +14,7 @@ workflows:
             - deploy_dev
       - deploy_prod:
           requires:
-            - deploy_dev
+            - int_test
           context: AWS
 jobs:
   build:
@@ -48,7 +48,7 @@ jobs:
 
   int_test:
     docker:
-      - image: circleci/node-browsers:10.15
+      - image: circleci/node:10.15-browsers
 
     working_directory: ~/repo
 
