@@ -33,7 +33,7 @@ const linkingFormTemplate = `<!doctype html>
                 <input type="url" name="url" class="form-control" placeholder="http://www.example.com"
                        pattern="https?://.+" required/>
             </div>
-            <input type="submit" class="btn btn-default" value="Shorten"/>
+            <input type="submit" name="shorten" class="btn btn-default" value="Shorten"/>
         </form>
     </div>
 </div>
