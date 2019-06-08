@@ -9,6 +9,9 @@ workflows:
           requires:
             - build
           context: AWS
+      - int_test:
+          requires:
+            - deploy_dev
       - deploy_prod:
           requires:
             - deploy_dev
@@ -42,6 +45,22 @@ jobs:
 
       - store_test_results:
           path: test-results
+
+  int_test:
+    docker:
+      - image: circleci/node-browsers:10.15
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package-lock.json" }}
+
+      - run:
+          command: npx cucumber-js --world-parameters '{"baseUrl":"https://example.com", "shortenerUrl":"'${DEV_SHORTENER_URL}'"}' --format json
 
   deploy_dev:
     docker:
