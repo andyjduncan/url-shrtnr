@@ -51,6 +51,7 @@ functions:
       TABLE_NAME:
         Ref: UrlsTable
       SHORTENED_ROOT: https://${self:provider.domain.${self:provider.stage}}/
+      MAX_AGE: 3600
     events:
       - http: GET {shortId}
   retryGuard:

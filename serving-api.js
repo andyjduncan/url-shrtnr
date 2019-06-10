@@ -56,9 +56,12 @@ const serveUrl = async (httpInput) => {
         url: shortenedUrl.Item.url
     });
 
+    const maxAge = process.env.MAX_AGE;
+
     return {
         statusCode: 200,
         headers: {
+            'cache-control': `public, max-age=${maxAge}`,
             'content-type': 'text/html'
         },
         body

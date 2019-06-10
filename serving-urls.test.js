@@ -68,4 +68,16 @@ describe('serving shortened urls', () => {
         expect(response.headers['content-type']).toMatch('text/html');
         expect(response.body).toMatch(renderedTemplate);
     });
+
+    it('sets appropriate cache control headers', async () => {
+        const maxAge = Math.floor(600 * Math.random()) + 1;
+
+        process.env.MAX_AGE = maxAge.toString();
+
+        AWS.mock('DynamoDB.DocumentClient', 'get', {Item: {url}});
+
+        const response = await servingApi.serveUrl(input);
+
+        expect(response.headers['cache-control']).toMatch(`public, max-age=${maxAge}`);
+    });
 });
