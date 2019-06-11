@@ -22,6 +22,7 @@ provider:
       Action:
         - "dynamodb:GetItem"
         - "dynamodb:PutItem"
+        - "dynamodb:UpdateItem"
       Resource: !GetAtt UrlsTable.Arn
     - Effect: "Allow"
       Action:
@@ -32,6 +33,10 @@ provider:
       Action:
         - "states:DescribeExecution"
       Resource: arn:aws:states:#{AWS::Region}:#{AWS::AccountId}:execution:${self:service}-saveUrl-${self:provider.stage}:*
+    - Effect: "Allow"
+      Action:
+        - "s3:GetObject"
+      Resource: "arn:aws:s3:::#{S3BucketShortenedLogs}/*"
 
 functions:
   shortenForm:
@@ -66,6 +71,19 @@ functions:
     environment:
       TABLE_NAME:
         Ref: UrlsTable
+  processAccessLogs:
+    handler: access-logs.processLog
+    environment:
+      TABLE_NAME:
+        Ref: UrlsTable
+    events:
+      - s3:
+          bucket: shortenedLogs
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: accesslogs/
+            - suffix: .gz
+
 
 stepFunctions:
   stateMachines:
@@ -116,25 +134,23 @@ resources:
         KeySchema:
           - AttributeName: shortId
             KeyType: HASH
-    ShortenedLogsBucket:
-      Type: AWS::S3::Bucket
     ShortenedLogsPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
-        Bucket: !Ref ShortenedLogsBucket
+        Bucket: !Ref S3BucketShortenedLogs
         PolicyDocument:
           Statement:
             - Action:
                 - "s3:PutObject"
               Effect: Allow
               Resource:
-                - "arn:aws:s3:::#{ShortenedLogsBucket}/*"
+                - "arn:aws:s3:::#{S3BucketShortenedLogs}/*"
               Principal:
                 CanonicalUser: c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0
     ShortenedDistribution:
       Type: AWS::CloudFront::Distribution
       DependsOn:
-        - ShortenedLogsBucket
+        - S3BucketShortenedLogs
       Properties:
         DistributionConfig:
           Aliases:
@@ -159,7 +175,7 @@ resources:
           Enabled: true
           HttpVersion: http2
           Logging:
-            Bucket: !GetAtt ShortenedLogsBucket.DomainName
+            Bucket: !GetAtt S3BucketShortenedLogs.DomainName
             Prefix: accesslogs/
           Origins:
             - Id: api
