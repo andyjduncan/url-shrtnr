@@ -6,6 +6,8 @@ const handlebars = require('handlebars');
 
 const servingApi = require('./serving-api');
 
+const randNumber = () => Math.ceil(10 * Math.random()) + 1;
+
 const randString = () => Math.random().toString(36).substr(2, 5);
 
 jest.mock('handlebars');
@@ -57,6 +59,17 @@ describe('serving shortened urls', () => {
 
         expect(handlebars.compile).toBeCalled();
         expect(template).toBeCalledWith({shortId, shortenedRoot, url});
+    });
+
+    it('substitutes the page views into the template if present', async () => {
+        const pageViews = randNumber();
+
+        AWS.mock('DynamoDB.DocumentClient', 'get', {Item: {url, pageViews}});
+
+        await servingApi.serveUrl(input);
+
+        expect(handlebars.compile).toBeCalled();
+        expect(template).toBeCalledWith({shortId, shortenedRoot, url, pageViews});
     });
 
     it('returns the rendered template as html', async () => {

@@ -28,6 +28,11 @@ const urlTemplate = `<!doctype html>
         <div class="row">
             use <a id="short" href="{{shortenedRoot}}{{shortId}}">{{shortenedRoot}}{{shortId}}</a>
         </div>
+        {{#if pageViews}}
+        <div class="row">
+            viewed {{pageViews}} times
+        </div>
+        {{/if}}
     </div>
 </div>
 </body>
@@ -50,11 +55,18 @@ const serveUrl = async (httpInput) => {
 
     const shortenedRoot = process.env.SHORTENED_ROOT;
 
-    const body = template({
+
+    const handlebarsContext = {
         shortId,
         shortenedRoot,
         url: shortenedUrl.Item.url
-    });
+    };
+
+    if (shortenedUrl.Item.pageViews) {
+        handlebarsContext.pageViews = shortenedUrl.Item.pageViews;
+    }
+
+    const body = template(handlebarsContext);
 
     const maxAge = process.env.MAX_AGE;
 
