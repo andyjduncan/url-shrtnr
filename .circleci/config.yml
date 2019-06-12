@@ -16,6 +16,9 @@ workflows:
           requires:
             - int_test
           context: AWS
+          filters:
+            branches:
+              only: master
 jobs:
   build:
     docker:
