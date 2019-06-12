@@ -6,8 +6,6 @@ const saveUrls = require('./save-urls');
 
 const randString = () => Math.random().toString(36).substr(2, 5);
 
-const randNumber = () => Math.ceil(Math.random() * 5);
-
 const tableName = randString();
 
 beforeEach(() => {
@@ -17,11 +15,9 @@ beforeEach(() => {
 
 describe('generating id', () => {
     it('generates a new id', async () => {
-        const retries = randNumber();
+        const response = await saveUrls.generateId();
 
-        const response = await saveUrls.generateId({retries});
-
-        expect(response.shortId).toMatch(new RegExp(`^[-A-Za-z0-9_]{${retries + 2}}$`));
+        expect(response.shortId).toMatch(new RegExp(`^[-A-Za-z0-9_]{10}$`));
     });
 
     it('passes through the input url', async () => {
