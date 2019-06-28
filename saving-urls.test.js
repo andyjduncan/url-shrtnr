@@ -21,7 +21,7 @@ describe('generating id', () => {
 
         const response = await saveUrls.generateId({retries});
 
-        expect(response.shortId).toMatch(new RegExp(`^[-A-Za-z0-9_]{${retries + 2}}$`));
+        expect(response.shortId).toMatch(new RegExp(`^[-A-Za-z0-9_]{10}$`));
     });
 
     it('passes through the input url', async () => {
