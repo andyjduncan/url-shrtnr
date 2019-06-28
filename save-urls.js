@@ -4,7 +4,7 @@ const AWS = require('aws-sdk/index');
 
 const nanoid = require('nanoid');
 
-const ID_LENGTH = 10;
+const MIN_ID_LENGTH = 2;
 
 const retryGuard = async (input) => {
     const retries = input.hasOwnProperty('retries') ? ++input.retries : 0;
@@ -13,7 +13,7 @@ const retryGuard = async (input) => {
 };
 
 const generateId = async (input) => {
-    const shortId = nanoid(ID_LENGTH);
+    const shortId = nanoid(MIN_ID_LENGTH + input.retries);
 
     return Object.assign({}, input, {shortId});
 };
