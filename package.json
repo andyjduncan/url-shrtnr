@@ -11,7 +11,7 @@
     "chromedriver": "^74.0.0",
     "cucumber": "^5.1.0",
     "jest": "^24.9.0",
-    "jest-junit": "^7.0.0",
+    "jest-junit": "^8.0.0",
     "lolex": "^4.2.0",
     "selenium-webdriver": "^4.0.0-alpha.4",
     "serverless": "^1.50.1",
