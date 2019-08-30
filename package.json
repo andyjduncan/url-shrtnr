@@ -14,7 +14,7 @@
     "jest-junit": "^8.0.0",
     "lolex": "^4.2.0",
     "selenium-webdriver": "^4.0.0-alpha.4",
-    "serverless": "^1.50.1",
+    "serverless": "^1.51.0",
     "serverless-pseudo-parameters": "^2.4.0",
     "serverless-step-functions": "^2.6.0",
     "uuid": "^3.3.3"
