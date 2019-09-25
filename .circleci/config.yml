@@ -5,27 +5,20 @@ workflows:
   "Build and deploy":
     jobs:
       - build
-      - deploy_int:
-          requires:
-            - build
-          context: AWS
-          filters:
-            branches:
-              ignore: master
-      - int_test:
-          requires:
-            - deploy_int
       - deploy_dev:
           requires:
             - build
           context: AWS
-          filters:
-            branches:
-              only: master
+      - int_test:
+          requires:
+            - deploy_dev
       - deploy_prod:
           requires:
             - deploy_dev
           context: AWS
+          filters:
+            branches:
+              only: master
 jobs:
   build:
     docker:
@@ -72,7 +65,7 @@ jobs:
       - run:
           command: |
             mkdir -p test-results
-            npx cucumber-js --world-parameters '{"baseUrl":"https://example.com", "shortenerUrl":"'${CIRCLE_SHA1:0:7}${BASE_URL}'"}' --format json:test-results/tests.cucumber
+            npx cucumber-js --world-parameters '{"baseUrl":"https://example.com", "shortenerUrl":dev"'${BASE_URL}'"}' --format json:test-results/tests.cucumber
 
       - store_test_results:
           path: test-results
