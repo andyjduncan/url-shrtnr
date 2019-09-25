@@ -5,19 +5,23 @@ plugins:
   - serverless-step-functions
   - serverless-pseudo-parameters
 
+custom:
+  shortDomain: ${ssm:/${self:service}/short-domain}
+  prod:
+    domain: ${self:custom.shortDomain}
+    maxAge: 3600
+  defaultDomain: ${self:provider.stage}.${self:custom.shortDomain}
+  defaultMaxAge: 60
+  domain: ${self:custom.${self:provider.stage}.domain, self:custom.defaultDomain}
+  maxAge: ${self:custom.${self:provider.stage}.maxAge, self:custom.defaultMaxAge}
+
 provider:
   name: aws
   runtime: nodejs10.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-west-1'}
   cfnRole: ${cf:UrlShortnerCiIam.CloudformationDeploymentRoleOutput}
-  shortDomain: ${ssm:/${self:service}/short-domain}
-  domain:
-    dev: dev.${self:provider.shortDomain}
-    prod: ${self:provider.shortDomain}
-  maxAge:
-    dev: 60
-    prod: 3600
+
   sslCertificate: ${ssm:/${self:service}/ssl-certificate}
   memorySize: 512
   iamRoleStatements:
@@ -58,8 +62,8 @@ functions:
     environment:
       TABLE_NAME:
         Ref: UrlsTable
-      SHORTENED_ROOT: https://${self:provider.domain.${self:provider.stage}}/
-      MAX_AGE: ${self:provider.maxAge.${self:provider.stage}}
+      SHORTENED_ROOT: https://${self:custom.domain}/
+      MAX_AGE: ${self:custom.maxAge}
     events:
       - http: GET {shortId}
   retryGuard:
@@ -170,7 +174,7 @@ resources:
       Properties:
         DistributionConfig:
           Aliases:
-            - ${self:provider.domain.${self:provider.stage}}
+            - ${self:custom.domain}
           DefaultCacheBehavior:
             AllowedMethods:
               - DELETE
@@ -216,6 +220,6 @@ resources:
         AliasTarget:
           DNSName: !GetAtt ShortenedDistribution.DomainName
           HostedZoneId: Z2FDTNDATAQYW2
-        HostedZoneName: ${self:provider.shortDomain}.
-        Name: ${self:provider.domain.${self:provider.stage}}.
+        HostedZoneName: ${self:custom.shortDomain}.
+        Name: ${self:custom.domain}.
         Type: A
