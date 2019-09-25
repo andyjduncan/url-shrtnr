@@ -65,7 +65,7 @@ jobs:
       - run:
           command: |
             mkdir -p test-results
-            npx cucumber-js --world-parameters '{"baseUrl":"https://example.com", "shortenerUrl":dev"'${BASE_URL}'"}' --format json:test-results/tests.cucumber
+            npx cucumber-js --world-parameters '{"baseUrl":"https://example.com", "shortenerUrl":"dev'${BASE_URL}'"}' --format json:test-results/tests.cucumber
 
       - store_test_results:
           path: test-results
