@@ -7,7 +7,12 @@ workflows:
   version: 2
   "Build and deploy":
     jobs:
-      - build
+      - queue/block_workflow:
+          time: '10'
+          consider-branch: false
+      - build:
+          requires:
+            - queue/block_workflow
       - deploy_dev:
           requires:
             - build
@@ -102,10 +107,6 @@ jobs:
           keys:
             - v1-dependencies-{{ checksum "package-lock.json" }}
 
-      - queue/until_front_of_line:
-          consider-branch: false
-          time: '10'
-
       - deploy:
           command: npx serverless deploy --stage dev
 
@@ -121,10 +122,6 @@ jobs:
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package-lock.json" }}
-
-      - queue/until_front_of_line:
-          consider-branch: false
-          time: '10'
 
       - deploy:
           command: npx serverless deploy --stage prod
