@@ -16,7 +16,7 @@
     "selenium-webdriver": "^4.0.0-alpha.5",
     "serverless": "^1.53.0",
     "serverless-pseudo-parameters": "^2.4.0",
-    "serverless-step-functions": "^2.8.0",
+    "serverless-step-functions": "^2.8.2",
     "uuid": "^3.3.3"
   },
   "dependencies": {
