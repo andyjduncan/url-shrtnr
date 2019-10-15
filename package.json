@@ -12,7 +12,7 @@
     "cucumber": "^6.0.2",
     "jest": "^24.9.0",
     "jest-junit": "^8.0.0",
-    "lolex": "^5.0.1",
+    "lolex": "^5.1.0",
     "selenium-webdriver": "^4.0.0-alpha.5",
     "serverless": "^1.54.0",
     "serverless-pseudo-parameters": "^2.5.0",
