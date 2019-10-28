@@ -9,7 +9,7 @@
   "devDependencies": {
     "aws-sdk-mock": "^4.5.0",
     "chromedriver": "^74.0.0",
-    "cucumber": "^6.0.2",
+    "cucumber": "^6.0.3",
     "jest": "^24.9.0",
     "jest-junit": "^9.0.0",
     "lolex": "^5.1.1",
