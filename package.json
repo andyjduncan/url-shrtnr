@@ -20,7 +20,7 @@
     "uuid": "^3.3.3"
   },
   "dependencies": {
-    "aws-sdk": "^2.571.0",
+    "aws-sdk": "^2.572.0",
     "handlebars": "^4.5.2",
     "nanoid": "^2.1.6",
     "p-wait-for": "^3.1.0"
