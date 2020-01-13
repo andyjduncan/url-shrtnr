@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.600.0",
-    "handlebars": "^4.6.0",
+    "handlebars": "^4.7.1",
     "nanoid": "^2.1.9",
     "p-wait-for": "^3.1.0"
   },
