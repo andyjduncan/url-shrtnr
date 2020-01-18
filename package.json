@@ -17,7 +17,7 @@
     "serverless": "^1.60.4",
     "serverless-pseudo-parameters": "^2.5.0",
     "serverless-step-functions": "^2.16.0",
-    "uuid": "^3.3.3"
+    "uuid": "^3.4.0"
   },
   "dependencies": {
     "aws-sdk": "^2.605.0",
