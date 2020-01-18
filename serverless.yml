@@ -223,3 +223,9 @@ resources:
         HostedZoneName: ${self:custom.shortDomain}.
         Name: ${self:custom.domain}.
         Type: A
+
+  Outputs:
+    DomainName:
+      Value: !Ref ShortenedRecordSet
+      Export:
+        Name: ${self:service}-${self:provider.stage}-domain-name
