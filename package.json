@@ -7,22 +7,22 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
-    "aws-sdk-mock": "^4.3.0",
+    "aws-sdk-mock": "^4.5.0",
     "chromedriver": "^74.0.0",
-    "cucumber": "^5.1.0",
+    "cucumber": "^6.0.5",
     "jest": "^24.9.0",
-    "jest-junit": "^8.0.0",
-    "lolex": "^4.2.0",
+    "jest-junit": "^10.0.0",
+    "lolex": "^5.1.2",
     "selenium-webdriver": "^4.0.0-alpha.5",
-    "serverless": "^1.53.0",
-    "serverless-pseudo-parameters": "^2.4.0",
-    "serverless-step-functions": "^2.8.0",
+    "serverless": "^1.60.4",
+    "serverless-pseudo-parameters": "^2.5.0",
+    "serverless-step-functions": "^2.16.0",
     "uuid": "^3.3.3"
   },
   "dependencies": {
-    "aws-sdk": "^2.538.0",
-    "handlebars": "^4.3.4",
-    "nanoid": "^2.1.1",
+    "aws-sdk": "^2.605.0",
+    "handlebars": "^4.7.2",
+    "nanoid": "^2.1.9",
     "p-wait-for": "^3.1.0"
   },
   "scripts": {
