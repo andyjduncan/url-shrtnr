@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
-    "aws-sdk-mock": "^4.5.0",
+    "aws-sdk-mock": "^5.0.0",
     "chromedriver": "^74.0.0",
     "cucumber": "^6.0.5",
     "jest": "^24.9.0",
