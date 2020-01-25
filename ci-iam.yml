@@ -43,6 +43,7 @@ Resources:
               - apigateway:PATCH
               - apigateway:POST
               - apigateway:PUT
+              - apigateway:UpdateRestApiPolicy
             Resource: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/*"
           - Effect: Allow
             Action:
