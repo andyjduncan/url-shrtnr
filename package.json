@@ -8,7 +8,7 @@
   "private": true,
   "devDependencies": {
     "aws-sdk-mock": "^5.1.0",
-    "chromedriver": "^74.0.0",
+    "chromedriver": "^81.0.0",
     "cucumber": "^6.0.5",
     "jest": "^26.0.1",
     "jest-junit": "^10.0.0",
