@@ -150,6 +150,11 @@ Resources:
             Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ServerlessServiceName}/*"
           - Effect: Allow
             Action:
+              - lambda:*
+            Resource:
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ServerlessServiceName}*"
+          - Effect: Allow
+            Action:
               - apigateway:GET
             Resource:
               - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis"

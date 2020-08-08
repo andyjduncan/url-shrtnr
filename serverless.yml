@@ -4,8 +4,11 @@ service:
 plugins:
   - serverless-step-functions
   - serverless-pseudo-parameters
-
+  - serverless-prune-plugin
 custom:
+  prune:
+    automatic: true
+    number: 3
   shortDomain: ${ssm:/${self:service}/short-domain}
   prod:
     domain: ${self:custom.shortDomain}

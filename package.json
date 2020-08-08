@@ -15,6 +15,7 @@
     "lolex": "^6.0.0",
     "selenium-webdriver": "^4.0.0-alpha.7",
     "serverless": "^1.62.0",
+    "serverless-prune-plugin": "^1.4.3",
     "serverless-pseudo-parameters": "^2.5.0",
     "serverless-step-functions": "^2.21.0",
     "uuid": "^7.0.3"
