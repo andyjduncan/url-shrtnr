@@ -13,10 +13,17 @@ custom:
   prod:
     domain: ${self:custom.shortDomain}
     maxAge: 3600
+    cloudfront: yes
+    shortenedPath: '/'
+  dev:
+    cloudfront: yes
+    shortenedPath: '/'
   defaultDomain: ${self:provider.stage}.${self:custom.shortDomain}
   defaultMaxAge: 60
   domain: ${self:custom.${self:provider.stage}.domain, self:custom.defaultDomain}
   maxAge: ${self:custom.${self:provider.stage}.maxAge, self:custom.defaultMaxAge}
+  path: ${self:custom.${self:provider.stage}.shortenedPath, "/${self:provider.stage}/"}
+  root: https://${self:custom.domain}${self:custom.path}
 
 provider:
   name: aws
@@ -51,11 +58,14 @@ provider:
 functions:
   shortenForm:
     handler: management-api.shorteningForm
+    environment:
+      SHORTENED_PATH: ${self:custom.path}
     events:
       - http: GET /
   shortenUrl:
     handler: management-api.shortenUrl
     environment:
+      SHORTENED_PATH: ${self:custom.path}
       SAVE_URL:
         Ref: SaveUrlStateMachine
     events:
@@ -65,7 +75,7 @@ functions:
     environment:
       TABLE_NAME:
         Ref: UrlsTable
-      SHORTENED_ROOT: https://${self:custom.domain}/
+      SHORTENED_ROOT: ${self:custom.root}
       MAX_AGE: ${self:custom.maxAge}
     events:
       - http: GET {shortId}
@@ -133,6 +143,11 @@ stepFunctions:
                 Next: RetryGuard
 
 resources:
+  Conditions:
+    CreateCloudfront:
+      Fn::Equals:
+        - ${self:custom.${self:provider.stage}.cloudfront, "no"}
+        - "yes"
   Resources:
     UrlsTable:
       Type: AWS::DynamoDB::Table
@@ -159,6 +174,7 @@ resources:
         SourceArn: "arn:aws:s3:::${self:service}-${self:provider.stage}-shortenedlogs"
     ShortenedLogsPolicy:
       Type: AWS::S3::BucketPolicy
+      Condition: CreateCloudfront
       Properties:
         Bucket: !Ref S3BucketShortenedLogs
         PolicyDocument:
@@ -172,6 +188,7 @@ resources:
                 CanonicalUser: c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0
     ShortenedDistribution:
       Type: AWS::CloudFront::Distribution
+      Condition: CreateCloudfront
       DependsOn:
         - S3BucketShortenedLogs
       Properties:
@@ -205,20 +222,15 @@ resources:
               CustomOriginConfig:
                 OriginProtocolPolicy: https-only
               DomainName:
-                !Join
-                - '.'
-                - - !Ref ApiGatewayRestApi
-                  - 'execute-api'
-                  - !Ref 'AWS::Region'
-                  - 'amazonaws'
-                  - 'com'
+                !Sub "#{ApiGatewayRestApi}.execute-api.#{AWS::Region}.#{AWS::URLSuffix}"
               OriginPath: /${self:provider.stage}
           PriceClass: PriceClass_100
           ViewerCertificate:
             AcmCertificateArn: ${self:provider.sslCertificate}
             SslSupportMethod: sni-only
-    ShortenedRecordSet:
+    CloudformationShortenedRecordSet:
       Type: AWS::Route53::RecordSet
+      Condition: CreateCloudfront
       Properties:
         AliasTarget:
           DNSName: !GetAtt ShortenedDistribution.DomainName
@@ -229,6 +241,9 @@ resources:
 
   Outputs:
     DomainName:
-      Value: !Ref ShortenedRecordSet
+      Value: !If
+        - CreateCloudfront
+        - !Ref CloudformationShortenedRecordSet
+        - !Sub "https://#{ApiGatewayRestApi}.execute-api.#{AWS::Region}.#{AWS::URLSuffix}/${self:provider.stage}"
       Export:
         Name: ${self:service}-${self:provider.stage}-domain-name

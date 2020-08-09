@@ -1,36 +1,51 @@
 version: 2.1
 
 orbs:
-  queue: eddiewebb/queue@1.1.4
+  aws-cli: circleci/aws-cli@1.2.1
 
 workflows:
   version: 2
   "Build and deploy":
     jobs:
-      - queue/block_workflow:
-          time: '10'
-          consider-branch: false
-      - build:
-          requires:
-            - queue/block_workflow
-      - deploy_dev:
+      - build
+      - deploy_int:
+          context: AWS
           requires:
             - build
-          context: AWS
+          filters:
+            branches:
+              ignore: master
       - int_test:
-          requires:
-            - deploy_dev
-      - deploy_prod:
-          requires:
-            - deploy_dev
           context: AWS
+          requires:
+            - deploy_int
+      - remove_int:
+          context: AWS
+          requires:
+            - int_test
+      - deploy_dev:
+          context: AWS
+          requires:
+            - build
           filters:
             branches:
               only: master
+      - deploy_prod:
+          context: AWS
+          requires:
+            - deploy_dev
+
+executors:
+  serverless:
+    docker:
+      - image: cimg/node:10.22
+  browser:
+    docker:
+      - image: circleci/node:10-browsers-legacy
+
 jobs:
   build:
-    docker:
-      - image: circleci/node:10.15
+    executor: serverless
 
     working_directory: ~/repo
 
@@ -48,7 +63,7 @@ jobs:
 
       - save_cache:
           paths:
-            - node_modules
+            - ~/.npm
           key: v1-dependencies-{{ checksum "package-lock.json" }}
 
       # run tests!
@@ -58,12 +73,13 @@ jobs:
           path: test-results
 
   int_test:
-    docker:
-      - image: circleci/node:10.15-browsers
+    executor: browser
 
     working_directory: ~/repo
 
     steps:
+      - aws-cli/install
+
       - checkout
 
       - restore_cache:
@@ -72,15 +88,17 @@ jobs:
 
       - run:
           command: |
+            npm ci
+            STAGE=$(echo "${CIRCLE_BRANCH}" | tr -cd '[:alnum:]')
+            SERVICE_ENDPOINT=$(aws cloudformation describe-stacks --stack-name urlshrtnr-${STAGE} --query "Stacks[].Outputs[?OutputKey=='ServiceEndpoint'].OutputValue" --output text)
             mkdir -p test-results
-            npx cucumber-js --world-parameters '{"baseUrl":"https://example.com", "shortenerUrl":"'${DEV_SHORTENER_URL}'"}' --format json:test-results/tests.cucumber
+            npx cucumber-js --world-parameters '{"baseUrl":"https://example.com", "shortenerUrl":"'${SERVICE_ENDPOINT}'"}' --format json:test-results/tests.cucumber
 
       - store_test_results:
           path: test-results
 
   deploy_int:
-    docker:
-      - image: circleci/node:10.15
+    executor: serverless
 
     working_directory: ~/repo
 
@@ -92,11 +110,32 @@ jobs:
             - v1-dependencies-{{ checksum "package-lock.json" }}
 
       - deploy:
-          command: npx serverless deploy --stage ${CIRCLE_SHA1:0:7}
+          command: |
+            npm ci
+            STAGE=$(echo "${CIRCLE_BRANCH}" | tr -cd '[:alnum:]')
+            npx serverless deploy --stage ${STAGE}
+
+  remove_int:
+    executor: serverless
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package-lock.json" }}
+
+      - deploy:
+          command: |
+            npm ci
+            STAGE=$(echo "${CIRCLE_BRANCH}" | tr -cd '[:alnum:]')
+            npx serverless remove --stage ${STAGE}
+
 
   deploy_dev:
-    docker:
-      - image: circleci/node:10.15
+    executor: serverless
 
     working_directory: ~/repo
 
@@ -108,11 +147,12 @@ jobs:
             - v1-dependencies-{{ checksum "package-lock.json" }}
 
       - deploy:
-          command: npx serverless deploy --stage dev
+          command: |
+            npm ci
+            npx serverless deploy --stage dev
 
   deploy_prod:
-    docker:
-      - image: circleci/node:10.15
+    executor: serverless
 
     working_directory: ~/repo
 
@@ -124,4 +164,6 @@ jobs:
             - v1-dependencies-{{ checksum "package-lock.json" }}
 
       - deploy:
-          command: npx serverless deploy --stage prod
+          command: |
+            npm ci
+            npx serverless deploy --stage prod
