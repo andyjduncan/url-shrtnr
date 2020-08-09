@@ -228,7 +228,7 @@ resources:
           ViewerCertificate:
             AcmCertificateArn: ${self:provider.sslCertificate}
             SslSupportMethod: sni-only
-    CloudformationShortenedRecordSet:
+    ShortenedRecordSet:
       Type: AWS::Route53::RecordSet
       Condition: CreateCloudfront
       Properties:
@@ -243,7 +243,7 @@ resources:
     DomainName:
       Value: !If
         - CreateCloudfront
-        - !Ref CloudformationShortenedRecordSet
+        - !Ref ShortenedRecordSet
         - !Sub "https://#{ApiGatewayRestApi}.execute-api.#{AWS::Region}.#{AWS::URLSuffix}/${self:provider.stage}"
       Export:
         Name: ${self:service}-${self:provider.stage}-domain-name
