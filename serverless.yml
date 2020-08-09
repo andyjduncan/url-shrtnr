@@ -169,7 +169,7 @@ resources:
       Type: AWS::S3::BucketPolicy
       Condition: CreateCloudfront
       Properties:
-        Bucket: "arn:aws:s3:::${self:custom.shortenedLogsBucketName}"
+        Bucket: ${self:custom.shortenedLogsBucketName}
         PolicyDocument:
           Statement:
             - Action:
