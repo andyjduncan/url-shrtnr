@@ -4,7 +4,7 @@ const { setDefaultTimeout, setWorldConstructor } = require("cucumber");
 
 const webdriver = require('selenium-webdriver');
 
-const uuidv4 = require('uuid/v4');
+const { v4: uuidv4 } = require('uuid');
 
 class CustomWorld {
     constructor(args) {
