@@ -89,7 +89,7 @@ jobs:
       - run:
           command: |
             npm ci
-            STAGE=$(echo "${CIRCLE_BRANCH}" | tr -cd '[:alnum:]')
+            STAGE=$(stage=$(echo "${CIRCLE_BRANCH}" | tr -cd '[:alnum:]'); echo ${stage:0:33})
             SERVICE_ENDPOINT=$(aws cloudformation describe-stacks --stack-name urlshrtnr-${STAGE} --query "Stacks[].Outputs[?OutputKey=='ServiceEndpoint'].OutputValue" --output text)
             mkdir -p test-results
             npx cucumber-js --world-parameters '{"baseUrl":"https://example.com", "shortenerUrl":"'${SERVICE_ENDPOINT}'"}' --format json:test-results/tests.cucumber
@@ -112,7 +112,7 @@ jobs:
       - deploy:
           command: |
             npm ci
-            STAGE=$(echo "${CIRCLE_BRANCH}" | tr -cd '[:alnum:]')
+            STAGE=$(stage=$(echo "${CIRCLE_BRANCH}" | tr -cd '[:alnum:]'); echo ${stage:0:33})
             npx serverless deploy --stage ${STAGE}
 
   remove_int:
@@ -130,7 +130,7 @@ jobs:
       - deploy:
           command: |
             npm ci
-            STAGE=$(echo "${CIRCLE_BRANCH}" | tr -cd '[:alnum:]')
+            STAGE=$(stage=$(echo "${CIRCLE_BRANCH}" | tr -cd '[:alnum:]'); echo ${stage:0:33})
             npx serverless remove --stage ${STAGE}
 
 
