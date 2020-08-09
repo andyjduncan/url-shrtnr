@@ -1,3 +1,5 @@
+configValidationMode: off
+
 service:
   name: urlshrtnr
 
@@ -10,6 +12,7 @@ custom:
     automatic: true
     number: 3
   shortDomain: ${ssm:/${self:service}/short-domain}
+  shortenedLogsBucketName: ${self:service}-${self:provider.stage}-shortenedlogs
   prod:
     domain: ${self:custom.shortDomain}
     maxAge: 3600
@@ -54,6 +57,9 @@ provider:
       Action:
         - "s3:GetObject"
       Resource: "arn:aws:s3:::${self:service}-${self:provider.stage}-shortenedlogs/*"
+  s3:
+    shortenedLogs:
+      name: ${self:custom.shortenedLogsBucketName}
 
 functions:
   shortenForm:
@@ -159,31 +165,18 @@ resources:
         KeySchema:
           - AttributeName: shortId
             KeyType: HASH
-    S3BucketShortenedLogs:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:service}-${self:provider.stage}-shortenedlogs
-    ProcessAccessLogsLambdaPermissionShortenedLogsS3:
-      Type: "AWS::Lambda::Permission"
-      Properties:
-        FunctionName: !GetAtt ProcessAccessLogsLambdaFunction.Arn
-        Principal: "s3.amazonaws.com"
-        Action: "lambda:InvokeFunction"
-        SourceAccount:
-          Ref: AWS::AccountId
-        SourceArn: "arn:aws:s3:::${self:service}-${self:provider.stage}-shortenedlogs"
     ShortenedLogsPolicy:
       Type: AWS::S3::BucketPolicy
       Condition: CreateCloudfront
       Properties:
-        Bucket: !Ref S3BucketShortenedLogs
+        Bucket: "arn:aws:s3:::${self:custom.shortenedLogsBucketName"
         PolicyDocument:
           Statement:
             - Action:
                 - "s3:PutObject"
               Effect: Allow
               Resource:
-                - "arn:aws:s3:::${self:service}-${self:provider.stage}-shortenedlogs/*"
+                - "arn:aws:s3:::${self:custom.shortenedLogsBucketName}/*"
               Principal:
                 CanonicalUser: c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0
     ShortenedDistribution:
