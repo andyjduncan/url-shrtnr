@@ -27,7 +27,7 @@ const linkingFormTemplate = `<!doctype html>
         <h1 class="site-title">to-link</h1>
     </div>
     <div class="row">
-        <form action="/shorten" method="post" id="shortenForm">
+        <form action="{{path}}shorten" method="post" id="shortenForm">
             <div class="form-group">
                 <label for="url">Page to link</label>
                 <input type="url" name="url" class="form-control" placeholder="http://www.example.com"
@@ -43,7 +43,9 @@ const linkingFormTemplate = `<!doctype html>
 const shorteningForm = async () => {
     const template = handlebars.compile(linkingFormTemplate);
 
-    const body = template();
+    const path = process.env.SHORTENED_PATH;
+
+    const body = template({path});
 
     return {
         statusCode: 200,
@@ -58,6 +60,8 @@ const shortenUrl = async (httpInput) => {
     const stepFunctions = new AWS.StepFunctions();
 
     const stateMachineArn = process.env.SAVE_URL;
+
+    const path = process.env.SHORTENED_PATH;
 
     const url = querystring.parse(httpInput.body).url;
 
@@ -85,7 +89,7 @@ const shortenUrl = async (httpInput) => {
     return {
         statusCode: 303,
         headers:{
-            location: `/${shortId}`
+            location: `${path}${shortId}`
         }
     };
 };

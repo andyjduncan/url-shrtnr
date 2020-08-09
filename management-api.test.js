@@ -26,12 +26,12 @@ const url = randString();
 
 const shortId = randString();
 
-const shortenedRoot = randString();
+const shortenedPath = randString();
 
 beforeEach(() => {
     AWS.restore();
     process.env.SAVE_URL = saveUrlArn;
-    process.env.SHORTENED_ROOT = shortenedRoot;
+    process.env.SHORTENED_PATH = shortenedPath;
 });
 
 describe('linking form', () => {
@@ -45,7 +45,7 @@ describe('linking form', () => {
     it('renders the form from a template', async () => {
         const response = await managementApi.shorteningForm();
 
-        expect(template).toBeCalled();
+        expect(template).toBeCalledWith({path: shortenedPath});
         expect(response.body).toMatch(renderedTemplate);
     });
 });
@@ -115,7 +115,7 @@ describe('url saving', () => {
         });
 
         expect(response.statusCode).toBe(303);
-        expect(response.headers['location']).toMatch(`/${shortId}`);
+        expect(response.headers['location']).toMatch(`${shortenedPath}${shortId}`);
     });
 
 });
