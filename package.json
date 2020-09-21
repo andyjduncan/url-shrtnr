@@ -17,7 +17,7 @@
     "serverless": "^2.1.1",
     "serverless-prune-plugin": "^1.4.3",
     "serverless-pseudo-parameters": "^2.5.0",
-    "serverless-step-functions": "^2.25.1",
+    "serverless-step-functions": "^2.26.0",
     "uuid": "^8.3.0"
   },
   "dependencies": {
