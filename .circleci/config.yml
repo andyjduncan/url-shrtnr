@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   aws-cli: circleci/aws-cli@1.2.1
+  browser-tools: circleci/browser-tools@1.1.3
 
 workflows:
   version: 2
@@ -38,10 +39,10 @@ workflows:
 executors:
   serverless:
     docker:
-      - image: cimg/node:10.22
+      - image: cimg/node:14.17
   browser:
     docker:
-      - image: circleci/node:10-browsers-legacy
+      - image: cimg/node:14.17-browsers
 
 jobs:
   build:
@@ -79,6 +80,8 @@ jobs:
 
     steps:
       - aws-cli/install
+      - browser-tools/install-chrome
+      - browser-tools/install-chromedriver
 
       - checkout
 
