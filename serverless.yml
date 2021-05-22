@@ -1,7 +1,6 @@
 configValidationMode: off
 
-service:
-  name: urlshrtnr
+service: urlshrtnr
 
 plugins:
   - serverless-step-functions
@@ -33,30 +32,32 @@ provider:
   runtime: nodejs14.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-west-1'}
-  cfnRole: ${cf:UrlShortnerCiIam.CloudformationDeploymentRoleOutput}
-
   sslCertificate: ${ssm:/${self:service}/ssl-certificate}
   memorySize: 512
-  iamRoleStatements:
-    - Effect: "Allow"
-      Action:
-        - "dynamodb:GetItem"
-        - "dynamodb:PutItem"
-        - "dynamodb:UpdateItem"
-      Resource: !GetAtt UrlsTable.Arn
-    - Effect: "Allow"
-      Action:
-        - "states:StartExecution"
-      Resource:
-        Ref: SaveUrlStateMachine
-    - Effect: "Allow"
-      Action:
-        - "states:DescribeExecution"
-      Resource: arn:aws:states:#{AWS::Region}:#{AWS::AccountId}:execution:${self:service}-saveUrl-${self:provider.stage}:*
-    - Effect: "Allow"
-      Action:
-        - "s3:GetObject"
-      Resource: "arn:aws:s3:::${self:service}-${self:provider.stage}-shortenedlogs/*"
+  iam:
+    deploymentRole: ${cf:UrlShortnerCiIam.CloudformationDeploymentRoleOutput} 
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:GetItem"
+            - "dynamodb:PutItem"
+            - "dynamodb:UpdateItem"
+          Resource: !GetAtt UrlsTable.Arn
+        - Effect: "Allow"
+          Action:
+            - "states:StartExecution"
+          Resource:
+            Ref: SaveUrlStateMachine
+        - Effect: "Allow"
+          Action:
+            - "states:DescribeExecution"
+          Resource: arn:aws:states:#{AWS::Region}:#{AWS::AccountId}:execution:${self:service}-saveUrl-${self:provider.stage}:*
+        - Effect: "Allow"
+          Action:
+            - "s3:GetObject"
+          Resource: "arn:aws:s3:::${self:service}-${self:provider.stage}-shortenedlogs/*"
+  lambdaHashingVersion: 20201221
   s3:
     shortenedLogs:
       name: ${self:custom.shortenedLogsBucketName}
