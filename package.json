@@ -21,7 +21,7 @@
     "uuid": "^8.3.2"
   },
   "dependencies": {
-    "aws-sdk": "^2.921.0",
+    "aws-sdk": "^2.922.0",
     "handlebars": "^4.7.7",
     "nanoid": "^2.1.11",
     "p-wait-for": "^3.2.0"
