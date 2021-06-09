@@ -14,7 +14,7 @@
     "jest-junit": "^12.1.0",
     "lolex": "^6.0.0",
     "selenium-webdriver": "^4.0.0-beta.4",
-    "serverless": "^2.44.0",
+    "serverless": "^2.45.1",
     "serverless-prune-plugin": "^1.5.0",
     "serverless-pseudo-parameters": "^2.5.0",
     "serverless-step-functions": "^2.30.0",
