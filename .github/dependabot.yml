@@ -1,0 +1,19 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: nanoid
+    versions:
+    - ">= 3.a, < 4"
+  - dependency-name: serverless
+    versions:
+    - 2.21.1
+    - 2.22.0
+    - 2.37.1
+  - dependency-name: aws-sdk
+    versions:
+    - 2.889.0
